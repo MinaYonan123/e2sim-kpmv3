@@ -30,6 +30,7 @@ typedef struct RICaction_Admitted_List {
 	asn_struct_ctx_t _asn_ctx;
 } RICaction_Admitted_List_t;
 
+
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_RICaction_Admitted_List;
 extern asn_SET_OF_specifics_t asn_SPC_RICaction_Admitted_List_specs_1;

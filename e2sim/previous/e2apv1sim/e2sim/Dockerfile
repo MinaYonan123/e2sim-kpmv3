@@ -52,4 +52,4 @@ WORKDIR ${E2SIM_DIR}
 #------------- Build E2SIM -----------------------
 RUN   ./build_e2sim --clean
 RUN   ./build_e2sim
-CMD ./build/e2sim 10.107.70.168 36422
+CMD ./build/e2sim 10.107.70.168 36421
