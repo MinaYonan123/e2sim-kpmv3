@@ -5,7 +5,7 @@
 --
 -- **************************************************************
 
-E2SM-KPM-RC {
+e2sm-kpm-rc.asn
 iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) 53148 e2(1) version1 (1) e2ap(1) e2sm-kpm-rc (1) }
 
 DEFINITIONS AUTOMATIC TAGS ::= 
