@@ -100,7 +100,7 @@ void e2ap_handle_sctp_data(int &socket_fd, sctp_buffer_t &data, E2Sim *e2sim) {
         case ProcedureCode_id_RICcontrol: // Procedure code = 4
             switch (pr_type_of_message) {
                 case E2AP_PDU_PR_initiatingMessage: {
-                    LOG_I("[E2AP] Received RIC-CONTROL-REQUEST");
+                    LOG_I("*******[E2AP] Received RIC-CONTROL-REQUEST******");
                     e2ap_handle_RICControlRequest(pdu, socket_fd, e2sim);
                     break;
                 }
@@ -225,8 +225,10 @@ void e2ap_handle_sctp_data(int &socket_fd, sctp_buffer_t &data, E2Sim *e2sim) {
 }
 
 void e2ap_handle_RICControlRequest(E2AP_PDU_t *pdu, int &socket_fd, E2Sim *e2sim) {
-    long func_id = 300;
+    long func_id = 3;
     SmCallback cb;
+
+    LOG_I("****** e2ap_handle_RICControlRequest ******");
 
     bool func_exists = true;
     try {
@@ -238,6 +240,7 @@ void e2ap_handle_RICControlRequest(E2AP_PDU_t *pdu, int &socket_fd, E2Sim *e2sim
     if (func_exists) {
         LOG_D("Calling callback function");
         cb(pdu);
+        LOG_D("*** DONE Calling callback function ****");
     } else {
         LOG_E("Error: No RAN Function with this ID exists");
     }
@@ -249,23 +252,60 @@ void e2ap_handle_RICControlRequest(E2AP_PDU_t *pdu, int &socket_fd, E2Sim *e2sim
 
     e2ap_asn1c_print_pdu(res_pdu);
 
-    auto buffer_size = MAX_SCTP_BUFFER;
-    unsigned char buffer[MAX_SCTP_BUFFER];
+    if(false) {
+        // Disable due Bug - not right encode
+        auto buffer_size = MAX_SCTP_BUFFER;
+        unsigned char buffer[MAX_SCTP_BUFFER];
 
-    sctp_buffer_t data;
-    auto er = asn_encode_to_buffer(nullptr, ATS_BASIC_XER, &asn_DEF_E2AP_PDU, res_pdu, buffer, buffer_size);
+        sctp_buffer_t data;
+        auto er = asn_encode_to_buffer(nullptr, ATS_BASIC_XER, &asn_DEF_E2AP_PDU, res_pdu, buffer, buffer_size);
 
-    LOG_D("er encoded is %zd\n", er.encoded);
-    data.len = (int) er.encoded;
+        LOG_D("er encoded is %zd\n", er.encoded);
+        data.len = (int) er.encoded;
 
-    memcpy(data.buffer, buffer, er.encoded);
+        memcpy(data.buffer, buffer, er.encoded);
 
-    //send response data over sctp
-    if (sctp_send_data(socket_fd, data) > 0) {
-        LOG_I("[SCTP] Sent E2-SERVICE-UPDATE");
+        LOG_I("\n ****** e2ap_handle_RICControlRequest Start Print buffer ************ \n");
+        // LOG_I("\n ****** recv_len= %d ************ \n", data.len);
+    
+        for(int i=0; i < data.len; ++i) {
+        printf("%x ", data.buffer[i]);
+        }
+
+        LOG_I("\n ****** e2ap_handle_RICControlRequest End Print buffer ************ \n");
+
+        // m_e2sim->encode_and_send_sctp_data(e2ap_pdu);
+        //send response data over sctp
+        if (sctp_send_data(socket_fd, data) > 0) {
+            LOG_I("[SCTP] Sent E2-SERVICE-UPDATE");
+        } else {
+            LOG_E("[SCTP] Unable to send E2-SERVICE-UPDATE to peer");
+        }
     } else {
-        LOG_E("[SCTP] Unable to send E2-SERVICE-UPDATE to peer");
+        uint8_t       *buf;
+        sctp_buffer_t data;
+
+        data.len = e2ap_asn1c_encode_pdu(res_pdu, &buf);
+        memcpy(data.buffer, buf, (data.len < MAX_SCTP_BUFFER)? data.len : MAX_SCTP_BUFFER);
+
+        printf("\n ****** e2ap_handle_RICControlRequest End Print buffer ************ \n");
+
+        // m_e2sim->encode_and_send_sctp_data(e2ap_pdu);
+        //send response data over sctp
+        if (sctp_send_data(socket_fd, data) > 0) {
+            LOG_I("[SCTP] Sent E2-SERVICE-UPDATE");
+        } else {
+            LOG_E("[SCTP] Unable to send E2-SERVICE-UPDATE to peer");
+        }
     }
+
+    // // m_e2sim->encode_and_send_sctp_data(e2ap_pdu);
+    // //send response data over sctp
+    // if (sctp_send_data(socket_fd, data) > 0) {
+    //     LOG_I("[SCTP] Sent E2-SERVICE-UPDATE");
+    // } else {
+    //     LOG_E("[SCTP] Unable to send E2-SERVICE-UPDATE to peer");
+    // }
 
 }
 
