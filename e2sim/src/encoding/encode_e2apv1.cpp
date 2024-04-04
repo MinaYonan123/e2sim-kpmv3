@@ -252,6 +252,8 @@ OCTET_STRING_t most_copy_src_ostring_to_dst_ostring ()
     return dst ;
 }
 
+// O-RAN E2AP
+// https://hackmd.io/@muhammadfadlin/SJfCrENad
 // TODO: Mostafa
 void encoding::generate_e2apv1_subscription_delete_acknowledge(E2AP_PDU_t *delete_resp_pdu) {
 
