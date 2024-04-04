@@ -205,6 +205,8 @@ void e2ap_handle_sctp_data(int &socket_fd, sctp_buffer_t &data, E2Sim *e2sim) {
             switch (pr_type_of_message) {
                 case E2AP_PDU_PR_initiatingMessage:
                     LOG_I("[E2AP] Received RIC-SUBSCRIPTION-DELETE");
+                    // TODO: Mostafa
+                    e2ap_handle_RICSubscriptionDeleteRequest(pdu, socket_fd, e2sim);
                     break;
 
                 case E2AP_PDU_PR_successfulOutcome: LOG_I("[E2AP] Received SUBSCRIPTION-DELETE SUCCESS");
@@ -221,6 +223,36 @@ void e2ap_handle_sctp_data(int &socket_fd, sctp_buffer_t &data, E2Sim *e2sim) {
         default: LOG_E("[E2AP] No available handler for procedureCode=%ld", procedureCode);
 
             break;
+    }
+}
+
+// TODO: Mostafa
+void e2ap_handle_RICSubscriptionDeleteRequest(E2AP_PDU_t* pdu, int &socket_fd, E2Sim *e2sim) {
+
+// long func_id = 3;
+
+    auto* res_pdu = (E2AP_PDU_t*)calloc(1, sizeof(E2AP_PDU));
+    encoding::generate_e2apv1_subscription_delete_acknowledge(res_pdu);
+
+    LOG_D("[E2AP] Created RIC-SUBSCRIPTION-DELETE-ACKNOWLEDGE***");
+
+    e2ap_asn1c_print_pdu(res_pdu);
+
+    {
+        uint8_t       *buf;
+        sctp_buffer_t data;
+
+        data.len = e2ap_asn1c_encode_pdu(res_pdu, &buf);
+        memcpy(data.buffer, buf, (data.len < MAX_SCTP_BUFFER)? data.len : MAX_SCTP_BUFFER);
+
+        printf("\n ****** e2ap_handle_RICSubscriptionDeleteRequest ************ \n");
+
+        //send response data over sctp
+        if (sctp_send_data(socket_fd, data) > 0) {
+            LOG_I("[SCTP] Sent RIC-SUBSCRIPTION-DELETE-ACKNOWLEDGE");
+        } else {
+            LOG_E("[SCTP] Unable to send RIC-SUBSCRIPTION-DELETE-ACKNOWLEDGE to peer");
+        }
     }
 }
 
