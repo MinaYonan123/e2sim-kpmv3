@@ -52,6 +52,9 @@ namespace encoding {
 
   void generate_e2apv1_ric_control_acknowledge(E2AP_PDU_t *control_resp_pdu);
 
+  // TODO: Mostafa
+  void generate_e2apv1_subscription_delete_acknowledge(E2AP_PDU_t *delete_resp_pdu);
+
   void generate_e2apv1_subscription_response(E2AP_PDU_t *sub_resp_pdu, E2AP_PDU_t *sub_req_pdu);
   
   void generate_e2apv1_subscription_response_success(E2AP_PDU *e2ap_pdu, long reqActionIdsAccepted[], long reqActionIdsRejected[], int accept_size, int reject_size, long reqRequestorId, long reqInstanceId);

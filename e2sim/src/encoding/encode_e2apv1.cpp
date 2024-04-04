@@ -252,17 +252,55 @@ OCTET_STRING_t most_copy_src_ostring_to_dst_ostring ()
     return dst ;
 }
 
+// TODO: Mostafa
+void encoding::generate_e2apv1_subscription_delete_acknowledge(E2AP_PDU_t *delete_resp_pdu) {
+
+    // RIC request ID. Mandatory
+    auto *req_id_ie = (RICsubscriptionDeleteResponse_IEs *) calloc(1, sizeof(RICsubscriptionDeleteResponse_IEs_t));
+    auto *ricRequestId = (RICrequestID_t *) calloc(1, sizeof(RICrequestID_t));
+    ricRequestId->ricRequestorID= 1021 ;
+    ricRequestId->ricInstanceID= 0;
+    req_id_ie->id = ProtocolIE_ID_id_RICrequestID;
+    req_id_ie->criticality = Criticality_reject;
+    req_id_ie->value.present = RICsubscriptionDeleteResponse_IEs__value_PR_RICrequestID;
+    req_id_ie->value.choice.RICrequestID = *ricRequestId;
+
+    // RAN Function ID. Mandatory
+    auto *ran_func_id_ie = (RICsubscriptionDeleteResponse_IEs *) calloc(1, sizeof(RICsubscriptionDeleteResponse_IEs_t));
+    auto *ranFunctionId = (RANfunctionID_t *) calloc(1, sizeof(RANfunctionID_t));
+    *ranFunctionId = 2;
+    ran_func_id_ie->id = ProtocolIE_ID_id_RANfunctionID;
+    ran_func_id_ie->criticality = Criticality_reject;
+    ran_func_id_ie->value.present = RICsubscriptionDeleteResponse_IEs__value_PR_RANfunctionID;
+    ran_func_id_ie->value.choice.RANfunctionID = *ranFunctionId;
+
+    // Message Type. Mandatory
+    auto *riCsubscriptionDeleteAcknowledge = (RICsubscriptionDeleteResponse_t *) calloc(1, sizeof(RICsubscriptionDeleteResponse_t));
+    ASN_SEQUENCE_ADD(&riCsubscriptionDeleteAcknowledge->protocolIEs.list, req_id_ie);
+    ASN_SEQUENCE_ADD(&riCsubscriptionDeleteAcknowledge->protocolIEs.list, ran_func_id_ie);
+
+    auto *successOutcome = (SuccessfulOutcome_t *) calloc(1, sizeof(SuccessfulOutcome_t));
+    successOutcome->procedureCode = ProcedureCode_id_RICsubscriptionDelete;
+    successOutcome->criticality = Criticality_reject;
+    successOutcome->value.present = SuccessfulOutcome__value_PR_RICsubscriptionDeleteResponse;
+    successOutcome->value.choice.RICsubscriptionDeleteResponse = *riCsubscriptionDeleteAcknowledge;
+
+    delete_resp_pdu->present = E2AP_PDU_PR_successfulOutcome;
+    delete_resp_pdu->choice.successfulOutcome = successOutcome;
+
+}
+
 // TODO: fill with suitable values.
 // For the moment it has just the mandatory fields, check documentation
 void encoding::generate_e2apv1_ric_control_acknowledge(E2AP_PDU_t *control_resp_pdu) {
 
     LOG_D(" generate_e2apv1_ric_control_acknowledge ");
-    auto *req_id_ie = (RICcontrolAcknowledge_IEs *) calloc(1, sizeof(RICcontrolAcknowledge_IEs_t));
 
-    auto *ricRequestId = (RICrequestID_t *) calloc(1, sizeof(RICrequestID_t));
 
     // TODO
     // RIC Request ID. Mandatory
+    auto *req_id_ie = (RICcontrolAcknowledge_IEs *) calloc(1, sizeof(RICcontrolAcknowledge_IEs_t));
+    auto *ricRequestId = (RICrequestID_t *) calloc(1, sizeof(RICrequestID_t));
     ricRequestId->ricRequestorID= 1022 ;
     ricRequestId->ricInstanceID= 0 ;
     req_id_ie->id = ProtocolIE_ID_id_RICrequestID;
@@ -270,11 +308,11 @@ void encoding::generate_e2apv1_ric_control_acknowledge(E2AP_PDU_t *control_resp_
     req_id_ie->value.present = RICcontrolAcknowledge_IEs__value_PR_RICrequestID;
     req_id_ie->value.choice.RICrequestID = *ricRequestId;
 
-    auto *ran_func_id_ie = (RICcontrolAcknowledge_IEs *) calloc(1, sizeof(RICcontrolAcknowledge_IEs_t));
 
-    auto *ranFunctionId = (RANfunctionID_t *) calloc(1, sizeof(RANfunctionID_t));
     // TODO
     //RAN Function ID. Mandatory
+    auto *ran_func_id_ie = (RICcontrolAcknowledge_IEs *) calloc(1, sizeof(RICcontrolAcknowledge_IEs_t));
+    auto *ranFunctionId = (RANfunctionID_t *) calloc(1, sizeof(RANfunctionID_t));
     *ranFunctionId = 3;
     ran_func_id_ie->id = ProtocolIE_ID_id_RANfunctionID;
     ran_func_id_ie->criticality = Criticality_reject;
@@ -282,9 +320,9 @@ void encoding::generate_e2apv1_ric_control_acknowledge(E2AP_PDU_t *control_resp_
     ran_func_id_ie->value.choice.RANfunctionID = *ranFunctionId;
 
     // RIC Control status. Mandatory
+    // TODO fill
     auto *ric_control_status_ie = (RICcontrolAcknowledge_IEs *) calloc(1, sizeof(RICcontrolAcknowledge_IEs_t));
     auto *ricControlStatus = (RICcontrolStatus_t *) calloc(1, sizeof(RICcontrolStatus_t));
-    // TODO fill
     *ricControlStatus = 0;
     ric_control_status_ie->id = ProtocolIE_ID_id_RICcontrolStatus;
     ric_control_status_ie->criticality = Criticality_reject;
@@ -295,7 +333,7 @@ void encoding::generate_e2apv1_ric_control_acknowledge(E2AP_PDU_t *control_resp_
     // RIC Control Outcome. Optional
     auto *ric_control_outcome_ie = (RICcontrolAcknowledge_IEs *) calloc(1, sizeof(RICcontrolAcknowledge_IEs_t));
     auto *ricControlOutcome = (RICcontrolOutcome_t *) calloc(1, sizeof(RICcontrolOutcome_t));
-    *ricControlOutcome = most_copy_ostring_to_ba();
+    *ricControlOutcome = most_copy_src_ostring_to_dst_ostring();
     if(true /* Mostafa - Should add condition depend of control outcome from ca*/) {
         ric_control_outcome_ie->id = ProtocolIE_ID_id_RICcontrolOutcome;
         ric_control_outcome_ie->criticality = Criticality_reject;
