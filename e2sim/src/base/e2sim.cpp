@@ -154,7 +154,7 @@ int E2Sim::run_loop(std::string server_ip, uint16_t server_port, uint16_t local_
     if (LOG_LEVEL == LOG_LEVEL_DEBUG)
         xer_fprint(stderr, &asn_DEF_E2AP_PDU, pdu_setup);
 
-    LOG_D("After XER Encoding\n");
+    LOG_D("After XER Encoding**\n");
 
     sctp_buffer_t data_buf;
     memset(data_buf.buffer, 0, MAX_SCTP_BUFFER);
@@ -189,7 +189,16 @@ int E2Sim::run_loop(std::string server_ip, uint16_t server_port, uint16_t local_
 
             LOG_D("[SCTP] Received new data of size %d", data_buf.len);
 
-            e2ap_handle_sctp_data(client_fd, data_buf, this);
+            if(e2ap_handle_sctp_data(client_fd, data_buf, this)) {
+
+              LOG_D("[SCTP] Application will be terminated");
+
+              // break;
+              // TODO: Mostafa, need to terminate detached thread, 
+              // and indication message thread.
+              exit(1);
+            }
+            LOG_D("[SCTP] Hollaaa");
         }
     } catch (SignalException &e) {
         LOG_E("SIGINT raised, possible cause: %s", strsignal(SIGINT));

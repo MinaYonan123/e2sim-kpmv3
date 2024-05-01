@@ -30,7 +30,7 @@
 #include <ProtocolIE-Field.h>
 
 
-void e2ap_handle_sctp_data(int &socket_fd, sctp_buffer_t &data, E2Sim *e2sim) {
+bool e2ap_handle_sctp_data(int &socket_fd, sctp_buffer_t &data, E2Sim *e2sim) {
     LOG_D("in e2ap_handle_sctp_data()");
     //decode the data into E2AP-PDU
     auto *pdu = (E2AP_PDU_t *) calloc(1, sizeof(E2AP_PDU));
@@ -207,7 +207,8 @@ void e2ap_handle_sctp_data(int &socket_fd, sctp_buffer_t &data, E2Sim *e2sim) {
                     LOG_I("[E2AP] Received RIC-SUBSCRIPTION-DELETE");
                     // TODO: Mostafa
                     e2ap_handle_RICSubscriptionDeleteRequest(pdu, socket_fd, e2sim);
-                    break;
+                    return true;
+                    // break;
 
                 case E2AP_PDU_PR_successfulOutcome: LOG_I("[E2AP] Received SUBSCRIPTION-DELETE SUCCESS");
                     break;
@@ -224,6 +225,7 @@ void e2ap_handle_sctp_data(int &socket_fd, sctp_buffer_t &data, E2Sim *e2sim) {
 
             break;
     }
+    return false;
 }
 
 // TODO: Mostafa
