@@ -168,7 +168,8 @@ void encoding::generate_e2apv1_setup_request_parameterized(E2AP_PDU_t *e2ap_pdu,
     gnb_bstring->buf = (uint8_t *) calloc(1, size_gnb_id);
     memcpy(gnb_bstring->buf, gnb_id, size_gnb_id);
     gnb_bstring->size = size_gnb_id;
-    gnb_bstring->bits_unused = 8 - size_gnb_id;
+    // gnb_bstring->bits_unused = 8 - size_gnb_id;
+    gnb_bstring->bits_unused = 0;
 
     // PLMNID is the same for every CGI
     int size_plmnid = 3;
