@@ -241,7 +241,7 @@ void encoding::generate_e2apv1_setup_request_parameterized(E2AP_PDU_t *e2ap_pdu,
 }
 
 // Mostafa - TODO: reimplement to use suitable values.
-OCTET_STRING_t most_copy_src_ostring_to_dst_ostring ()
+OCTET_STRING_t encoding::most_copy_src_ostring_to_dst_ostring ()
 {
     const int _size = 2;
     OCTET_STRING_t dst = {0} ;
@@ -335,7 +335,7 @@ void encoding::generate_e2apv1_ric_control_acknowledge(E2AP_PDU_t *control_resp_
     // RIC Control Outcome. Optional
     auto *ric_control_outcome_ie = (RICcontrolAcknowledge_IEs *) calloc(1, sizeof(RICcontrolAcknowledge_IEs_t));
     auto *ricControlOutcome = (RICcontrolOutcome_t *) calloc(1, sizeof(RICcontrolOutcome_t));
-    *ricControlOutcome = most_copy_src_ostring_to_dst_ostring();
+    *ricControlOutcome = encoding::most_copy_src_ostring_to_dst_ostring();
     if(true /* Mostafa - Should add condition depend of control outcome from ca*/) {
         ric_control_outcome_ie->id = ProtocolIE_ID_id_RICcontrolOutcome;
         ric_control_outcome_ie->criticality = Criticality_reject;

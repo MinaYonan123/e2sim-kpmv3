@@ -64,6 +64,8 @@ namespace encoding {
   void generate_e2apv1_service_update(E2AP_PDU_t *e2ap_pdu, std::vector<ran_func_info> all_funcs);
 
   long get_function_id_from_control_request(E2AP_PDU_t *pdu);
+
+  OCTET_STRING_t most_copy_src_ostring_to_dst_ostring ();
 }
 
 #endif
