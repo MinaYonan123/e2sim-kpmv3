@@ -81,7 +81,7 @@ void generate_e2apv1_service_update(E2AP_PDU_t *e2ap_pdu) {
   itemIes->criticality = Criticality_reject;
   itemIes->value.present = RANfunction_ItemIEs__value_PR_RANfunction_Item;
   //Mina 
-  itemIes->value.choice.RANfunction_Item.ranFunctionID = 2;
+  itemIes->value.choice.RANfunction_Item.ranFunctionID = (rand() % 2) + 1 //2;
 
   E2SM_KPM_RANfunction_Description_t *ranfunc_desc =
     (E2SM_KPM_RANfunction_Description_t*)calloc(1,sizeof(E2SM_KPM_RANfunction_Description_t));
