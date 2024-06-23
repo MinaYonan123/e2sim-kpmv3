@@ -231,10 +231,52 @@ bool e2ap_handle_sctp_data(int &socket_fd, sctp_buffer_t &data, E2Sim *e2sim) {
 // TODO: Mostafa
 void e2ap_handle_RICSubscriptionDeleteRequest(E2AP_PDU_t* pdu, int &socket_fd, E2Sim *e2sim) {
 
-// long func_id = 3;
+    RICsubscriptionDeleteRequest_t orig_req = pdu->choice.initiatingMessage->value.choice.RICsubscriptionDeleteRequest;
+// RICsubscriptionDeleteResponse_IEs
+
+  int count = orig_req.protocolIEs.list.count;
+  int size = orig_req.protocolIEs.list.size;
+
+  RICsubscriptionDeleteRequest_IEs_t **ies = (RICsubscriptionDeleteRequest_IEs_t**)orig_req.protocolIEs.list.array;
+
+  RICsubscriptionDeleteRequest_IEs__value_PR pres;
+  
+  uint16_t reqRequestorId {};
+  uint16_t reqInstanceId {};
+  uint16_t ranFuncionId {};
+
+
+  for (int i = 0; i < count; i++) 
+  {
+    RICsubscriptionDeleteRequest_IEs_t *next_ie = ies[i];
+    pres = next_ie->value.present; // value of the current IE
+      
+    switch(pres) 
+    {
+      // IE containing the RIC Request ID
+      case RICsubscriptionDeleteRequest_IEs__value_PR_RICrequestID:
+        {	
+          RICrequestID_t reqId = next_ie->value.choice.RICrequestID;
+          reqRequestorId = reqId.ricRequestorID;
+          reqInstanceId = reqId.ricInstanceID;
+          break;
+        }
+      // IE containing the RAN Function ID
+      case RICsubscriptionDeleteRequest_IEs__value_PR_RANfunctionID:
+        {
+          ranFuncionId = next_ie->value.choice.RANfunctionID;
+          break;
+        }
+        default:
+        {
+        //   NS_LOG_DEBUG ("in case default");	
+          continue;
+        }
+    }
+  }
 
     auto* res_pdu = (E2AP_PDU_t*)calloc(1, sizeof(E2AP_PDU));
-    encoding::generate_e2apv1_subscription_delete_acknowledge(res_pdu);
+    encoding::generate_e2apv1_subscription_delete_acknowledge(res_pdu, reqRequestorId, reqInstanceId, ranFuncionId);
 
     LOG_D("[E2AP] Created RIC-SUBSCRIPTION-DELETE-ACKNOWLEDGE***");
 
@@ -259,28 +301,82 @@ void e2ap_handle_RICSubscriptionDeleteRequest(E2AP_PDU_t* pdu, int &socket_fd, E
 }
 
 void e2ap_handle_RICControlRequest(E2AP_PDU_t *pdu, int &socket_fd, E2Sim *e2sim) {
-    long func_id = 3;
-    SmCallback cb;
+    // long func_id = 3;
 
-    LOG_I("****** e2ap_handle_RICControlRequest ******");
+    RICcontrolRequest_t orig_req = pdu->choice.initiatingMessage->value.choice.RICcontrolRequest;
 
-    bool func_exists = true;
-    try {
-        cb = e2sim->get_sm_callback(func_id);
-    } catch (const std::out_of_range &e) {
-        func_exists = false;
+  int count = orig_req.protocolIEs.list.count;
+  int size = orig_req.protocolIEs.list.size;
+
+  RICcontrolRequest_IEs_t **ies = (RICcontrolRequest_IEs_t**)orig_req.protocolIEs.list.array;
+
+  RICcontrolRequest_IEs__value_PR pres;
+  
+  uint16_t reqRequestorId {};
+  uint16_t reqInstanceId {};
+  uint16_t ranFuncionId {};
+
+  
+  // iterate over the IEs
+  for (int i = 0; i < count; i++) 
+  {
+    RICcontrolRequest_IEs_t *next_ie = ies[i];
+    pres = next_ie->value.present; // value of the current IE
+      
+    switch(pres) 
+    {
+      // IE containing the RIC Request ID
+      case RICcontrolRequest_IEs__value_PR_RICrequestID:
+        {
+        //   NS_LOG_DEBUG ("Processing RIC Request ID field");	
+          RICrequestID_t reqId = next_ie->value.choice.RICrequestID;
+          reqRequestorId = reqId.ricRequestorID;
+          reqInstanceId = reqId.ricInstanceID;
+        //   NS_LOG_DEBUG ( "RIC Requestor ID " << reqRequestorId);
+        //   NS_LOG_DEBUG ( "RIC Instance ID " << reqInstanceId);
+          break;
+        }
+      // IE containing the RAN Function ID
+      case RICcontrolRequest_IEs__value_PR_RANfunctionID:
+        {
+        //   NS_LOG_DEBUG ("Processing RAN Function ID field");	
+              ranFuncionId = next_ie->value.choice.RANfunctionID;
+
+              SmCallback cb;
+
+            LOG_I("****** e2ap_handle_RICControlRequest ******");
+
+            bool func_exists = true;
+            try {
+                // cb = e2sim->get_sm_callback(func_id);
+                cb = e2sim->get_sm_callback(ranFuncionId);
+
+            } catch (const std::out_of_range &e) {
+                func_exists = false;
+            }
+
+            if (func_exists) {
+                LOG_D("Calling callback function");
+                cb(pdu);
+                LOG_D("*** DONE Calling callback function ****");
+            } else {
+                LOG_E("Error: No RAN Function with this ID exists");
+            }
+
+        //   NS_LOG_DEBUG ("RAN Function ID " << ranFuncionId);
+          break;
+        }
+        default:
+        {
+        //   NS_LOG_DEBUG ("in case default");	
+          continue;
+        }
     }
+  }
 
-    if (func_exists) {
-        LOG_D("Calling callback function");
-        cb(pdu);
-        LOG_D("*** DONE Calling callback function ****");
-    } else {
-        LOG_E("Error: No RAN Function with this ID exists");
-    }
 
     auto* res_pdu = (E2AP_PDU_t*)calloc(1, sizeof(E2AP_PDU));
-    encoding::generate_e2apv1_ric_control_acknowledge(res_pdu);
+    encoding::generate_e2apv1_ric_control_acknowledge(res_pdu, reqRequestorId, reqInstanceId, ranFuncionId);
 
     LOG_D("[E2AP] Created E2-RIC-CONTROL-ACKNOWLEDGE");
 
