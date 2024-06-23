@@ -256,13 +256,13 @@ OCTET_STRING_t encoding::most_copy_src_ostring_to_dst_ostring ()
 // O-RAN E2AP
 // https://hackmd.io/@muhammadfadlin/SJfCrENad
 // TODO: Mostafa
-void encoding::generate_e2apv1_subscription_delete_acknowledge(E2AP_PDU_t *delete_resp_pdu) {
+void encoding::generate_e2apv1_subscription_delete_acknowledge(E2AP_PDU_t *delete_resp_pdu, long reqRequestorId, long reqInstanceId, long ranFuncionId) {
 
     // RIC request ID. Mandatory
     auto *req_id_ie = (RICsubscriptionDeleteResponse_IEs *) calloc(1, sizeof(RICsubscriptionDeleteResponse_IEs_t));
     auto *ricRequestId = (RICrequestID_t *) calloc(1, sizeof(RICrequestID_t));
-    ricRequestId->ricRequestorID= 1021 ;
-    ricRequestId->ricInstanceID= 0;
+    ricRequestId->ricRequestorID= reqRequestorId; //1021 ;
+    ricRequestId->ricInstanceID= reqInstanceId; //0;
     req_id_ie->id = ProtocolIE_ID_id_RICrequestID;
     req_id_ie->criticality = Criticality_reject;
     req_id_ie->value.present = RICsubscriptionDeleteResponse_IEs__value_PR_RICrequestID;
@@ -271,7 +271,7 @@ void encoding::generate_e2apv1_subscription_delete_acknowledge(E2AP_PDU_t *delet
     // RAN Function ID. Mandatory
     auto *ran_func_id_ie = (RICsubscriptionDeleteResponse_IEs *) calloc(1, sizeof(RICsubscriptionDeleteResponse_IEs_t));
     auto *ranFunctionId = (RANfunctionID_t *) calloc(1, sizeof(RANfunctionID_t));
-    *ranFunctionId = 2;
+    *ranFunctionId = ranFuncionId; //2;
     ran_func_id_ie->id = ProtocolIE_ID_id_RANfunctionID;
     ran_func_id_ie->criticality = Criticality_reject;
     ran_func_id_ie->value.present = RICsubscriptionDeleteResponse_IEs__value_PR_RANfunctionID;
@@ -295,7 +295,10 @@ void encoding::generate_e2apv1_subscription_delete_acknowledge(E2AP_PDU_t *delet
 
 // TODO: fill with suitable values.
 // For the moment it has just the mandatory fields, check documentation
-void encoding::generate_e2apv1_ric_control_acknowledge(E2AP_PDU_t *control_resp_pdu) {
+void encoding::generate_e2apv1_ric_control_acknowledge(E2AP_PDU_t *control_resp_pdu, 
+                                                    long _reqRequestorId, 
+                                                    long _reqInstanceId, 
+                                                    long _ranFuncionId) {
 
     LOG_D(" generate_e2apv1_ric_control_acknowledge ");
 
@@ -304,8 +307,8 @@ void encoding::generate_e2apv1_ric_control_acknowledge(E2AP_PDU_t *control_resp_
     // RIC Request ID. Mandatory
     auto *req_id_ie = (RICcontrolAcknowledge_IEs *) calloc(1, sizeof(RICcontrolAcknowledge_IEs_t));
     auto *ricRequestId = (RICrequestID_t *) calloc(1, sizeof(RICrequestID_t));
-    ricRequestId->ricRequestorID= 1022 ;
-    ricRequestId->ricInstanceID= 0 ;
+    ricRequestId->ricRequestorID= _reqRequestorId; //1023 ;
+    ricRequestId->ricInstanceID= _reqInstanceId; //0 ;
     req_id_ie->id = ProtocolIE_ID_id_RICrequestID;
     req_id_ie->criticality = Criticality_reject;
     req_id_ie->value.present = RICcontrolAcknowledge_IEs__value_PR_RICrequestID;
@@ -316,7 +319,7 @@ void encoding::generate_e2apv1_ric_control_acknowledge(E2AP_PDU_t *control_resp_
     //RAN Function ID. Mandatory
     auto *ran_func_id_ie = (RICcontrolAcknowledge_IEs *) calloc(1, sizeof(RICcontrolAcknowledge_IEs_t));
     auto *ranFunctionId = (RANfunctionID_t *) calloc(1, sizeof(RANfunctionID_t));
-    *ranFunctionId = 3;
+    *ranFunctionId = _ranFuncionId; //2;
     ran_func_id_ie->id = ProtocolIE_ID_id_RANfunctionID;
     ran_func_id_ie->criticality = Criticality_reject;
     ran_func_id_ie->value.present = RICcontrolAcknowledge_IEs__value_PR_RANfunctionID;
