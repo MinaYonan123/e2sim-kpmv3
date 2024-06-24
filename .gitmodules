@@ -1,0 +1,3 @@
+[submodule "ns-3-mmwave-oran"]
+	path = ns-3-mmwave-oran
+	url = https://gitlab.tech.orange/xapp_testing/ns3-oran-Flexric/ns-3-mmwave-oran.git
