@@ -101,6 +101,7 @@ bool e2ap_handle_sctp_data(int &socket_fd, sctp_buffer_t &data, E2Sim *e2sim) {
             switch (pr_type_of_message) {
                 case E2AP_PDU_PR_initiatingMessage: {
                     LOG_I("*******[E2AP] Received RIC-CONTROL-REQUEST******");
+
                     e2ap_handle_RICControlRequest(pdu, socket_fd, e2sim);
                     break;
                 }
@@ -169,6 +170,7 @@ bool e2ap_handle_sctp_data(int &socket_fd, sctp_buffer_t &data, E2Sim *e2sim) {
                     LOG_I("[E2AP] Received RIC-SUBSCRIPTION-REQUEST");
                     //          e2ap_handle_RICSubscriptionRequest(pdu, socket_fd);
                     long func_id = encoding::get_function_id_from_subscription(pdu);
+
                     LOG_D("Function Id of message is %ld\n", func_id);
                     SubscriptionCallback cb;
 
@@ -203,12 +205,34 @@ bool e2ap_handle_sctp_data(int &socket_fd, sctp_buffer_t &data, E2Sim *e2sim) {
             break;
         case ProcedureCode_id_RICsubscriptionDelete: // Procedure code: 9
             switch (pr_type_of_message) {
-                case E2AP_PDU_PR_initiatingMessage:
+                case E2AP_PDU_PR_initiatingMessage:{
                     LOG_I("[E2AP] Received RIC-SUBSCRIPTION-DELETE");
                     // TODO: Mostafa
+
+                    CallbackFunction cb;
+
+                    LOG_I("****** e2ap_handle_RICSubscriptionDeleteRequest ******");
+
+                    bool func_exists = true;
+                    try {
+                        cb = e2sim->get_callback(1);
+
+                    } catch (const std::out_of_range &e) {
+                        func_exists = false;
+                    }
+
+                    if (func_exists) {
+                        LOG_D("Calling Delete callback function");
+                        cb();
+                    } else {
+                        LOG_E("Error: No RAN Function with this ID exists");
+                    }
+
                     e2ap_handle_RICSubscriptionDeleteRequest(pdu, socket_fd, e2sim);
+
                     return true;
-                    // break;
+                    }
+
 
                 case E2AP_PDU_PR_successfulOutcome: LOG_I("[E2AP] Received SUBSCRIPTION-DELETE SUCCESS");
                     break;
@@ -394,15 +418,6 @@ void e2ap_handle_RICControlRequest(E2AP_PDU_t *pdu, int &socket_fd, E2Sim *e2sim
         data.len = (int) er.encoded;
 
         memcpy(data.buffer, buffer, er.encoded);
-
-        LOG_I("\n ****** e2ap_handle_RICControlRequest Start Print buffer ************ \n");
-        // LOG_I("\n ****** recv_len= %d ************ \n", data.len);
-    
-        for(int i=0; i < data.len; ++i) {
-        printf("%x ", data.buffer[i]);
-        }
-
-        LOG_I("\n ****** e2ap_handle_RICControlRequest End Print buffer ************ \n");
 
         // m_e2sim->encode_and_send_sctp_data(e2ap_pdu);
         //send response data over sctp

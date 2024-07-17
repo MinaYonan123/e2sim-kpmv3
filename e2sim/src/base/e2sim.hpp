@@ -24,6 +24,8 @@
 #include <functional>
 #include <string>
 
+#include<thread>
+
 extern "C" {
 #include "E2AP-PDU.h"
 #include "OCTET_STRING.h"
@@ -31,6 +33,7 @@ extern "C" {
 
 typedef std::function<void(E2AP_PDU_t*)> SubscriptionCallback;
 typedef std::function<void(E2AP_PDU_t*)> SmCallback;
+typedef std::function<void(void)> CallbackFunction;
 
 class E2Sim {
 public:
@@ -48,6 +51,9 @@ public:
   void register_subscription_callback(long func_id, SubscriptionCallback cb);
   void register_sm_callback(long func_id, SmCallback cb);
 
+  void register_callback(long cb_id, CallbackFunction cb);
+  CallbackFunction get_callback(long cb_id);
+
   void encode_and_send_sctp_data(E2AP_PDU_t* pdu);
 
   int run_loop(int argc, char* argv[]);
@@ -60,6 +66,7 @@ private:
     std::unordered_map<long, SubscriptionCallback> subscription_callbacks;
     std::unordered_map<long, SmCallback> sm_callbacks;
 
+    std::unordered_map<long, CallbackFunction> callbackfunctions;
     int client_fd {0};
     void wait_for_sctp_data();
 

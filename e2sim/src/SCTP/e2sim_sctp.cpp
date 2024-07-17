@@ -259,24 +259,12 @@ Outcome of recv()
 */
 int sctp_receive_data(int &socket_fd, sctp_buffer_t &data)
 {
-  printf("\n ****** sctp_receive_data ************ \n");
   // Clear out the data before receiving
   memset(data.buffer, 0, MAX_SCTP_BUFFER);
   data.len = 0;
 
-
   // Receive data from the socket
   int recv_len = recv(socket_fd, &data.buffer, sizeof(data.buffer), 0);
-
-  printf("\n ****** sctp_receive_data Start Print buffer ************ \n");
-  printf("\n ****** recv_len= %d ************ \n", recv_len);
-  
-  for(int i=0; i < recv_len; ++i) {
-    printf("%x ", data.buffer[i]);
-  }
-
-
-  printf("\n ****** sctp_receive_data End Print buffer ************ \n");
 
   if(recv_len == -1)
   {
