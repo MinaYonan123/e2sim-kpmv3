@@ -58,6 +58,22 @@ void E2Sim::register_sm_callback(long func_id, SmCallback cb) {
     sm_callbacks[func_id] = cb;
 }
 
+void E2Sim::register_callback(long cb_id, CallbackFunction cb) {
+    LOG_I("%%%%about to register callback function for e2sm for cb_id %ld", cb_id);
+    callbackfunctions[cb_id] = cb;
+}
+CallbackFunction E2Sim::get_callback(long cb_id) {
+    LOG_I("%%%%we are getting the e2sm callback function for cb_id %ld\n", cb_id);
+    CallbackFunction cb;
+    try {
+        cb = callbackfunctions.at(cb_id);
+    } catch (const std::out_of_range &e) {
+        LOG_E("Function ID is not registered");
+        throw std::out_of_range("Function ID is not registered");
+    }
+    return cb;
+}
+
 SmCallback E2Sim::get_sm_callback(long func_id) {
     LOG_I("%%%%we are getting the e2sm callback for func id %ld\n", func_id);
     SmCallback cb;
@@ -106,7 +122,6 @@ void E2Sim::wait_for_sctp_data()
 }
 
 
-
 void E2Sim::generate_e2apv1_subscription_response_success(E2AP_PDU *e2ap_pdu, long reqActionIdsAccepted[], long reqActionIdsRejected[], int accept_size, int reject_size, long reqRequestorId, long reqInstanceId) {
   encoding::generate_e2apv1_subscription_response_success(e2ap_pdu, reqActionIdsAccepted, reqActionIdsRejected, accept_size, reject_size, reqRequestorId, reqInstanceId);
 }
@@ -150,12 +165,12 @@ int E2Sim::run_loop(std::string server_ip, uint16_t server_port, uint16_t local_
 
     generate_e2apv1_setup_request_parameterized(pdu_setup, all_funcs, (uint8_t *) gnb_id.c_str(), (uint8_t *) plmn_id.c_str());
 
-    LOG_D("After generating e2setup req\n");
+    LOG_D("After generating e2setup req");
 
     if (LOG_LEVEL == LOG_LEVEL_DEBUG)
         xer_fprint(stderr, &asn_DEF_E2AP_PDU, pdu_setup);
 
-    LOG_D("After XER Encoding\n");
+    LOG_D("After XER Encoding");
 
     sctp_buffer_t data_buf;
     memset(data_buf.buffer, 0, MAX_SCTP_BUFFER);
@@ -183,14 +198,24 @@ int E2Sim::run_loop(std::string server_ip, uint16_t server_port, uint16_t local_
 
     try {
         SignalHandler signalHandler;
-        while (SignalHandler::isRunning()) //constantly looking for data on SCTP interface
+        //constantly looking for data on SCTP interface
+        while (SignalHandler::isRunning())
         {
             if (sctp_receive_data(client_fd, data_buf) <= 0)
                 break;
 
             LOG_D("[SCTP] Received new data of size %d", data_buf.len);
 
-            e2ap_handle_sctp_data(client_fd, data_buf, this);
+            /* if true means delete reuqest*/
+            if(e2ap_handle_sctp_data(client_fd, data_buf, this)) {
+
+              LOG_D("[SCTP] Application will be terminated");
+
+              // TODO: Mostafa, need to terminate detached thread, 
+              // and indication message thread.
+              break;
+            }
+
         }
     } catch (SignalException &e) {
         LOG_E("SIGINT raised, possible cause: %s", strsignal(SIGINT));

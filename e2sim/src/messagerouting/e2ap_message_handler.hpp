@@ -29,7 +29,7 @@ extern "C" {
   #include "e2ap_asn1c_codec.h"
 }
 
-void e2ap_handle_sctp_data(int &socket_fd, sctp_buffer_t &data, E2Sim *e2sim);
+bool e2ap_handle_sctp_data(int &socket_fd, sctp_buffer_t &data, E2Sim *e2sim);
 
 void e2ap_handle_X2SetupRequest(E2AP_PDU_t* pdu, int &socket_fd);
 
@@ -48,5 +48,8 @@ void e2ap_handle_ResourceStatusRequest(E2AP_PDU_t* pdu, int &socket_fd);
 void e2ap_handle_E2SeviceRequest(E2AP_PDU_t* pdu, int &socket_fd, E2Sim *e2sim);
 
 void e2ap_handle_RICControlRequest(E2AP_PDU_t *pPdu, int &fd, E2Sim *e2sim);
+
+// TODO: Mostafa
+void e2ap_handle_RICSubscriptionDeleteRequest(E2AP_PDU_t* pdu, int &socket_fd, E2Sim *e2sim);
 
 #endif

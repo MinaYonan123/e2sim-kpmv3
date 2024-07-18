@@ -50,7 +50,10 @@ namespace encoding {
   
   void generate_e2apv1_subscription_request(E2AP_PDU_t *sub_req_pdu);
 
-  void generate_e2apv1_ric_control_acknowledge(E2AP_PDU_t *control_resp_pdu);
+  void generate_e2apv1_ric_control_acknowledge(E2AP_PDU_t *control_resp_pdu, long reqRequestorId, long reqInstanceId, long ranFuncionId);
+
+  // TODO: Mostafa
+  void generate_e2apv1_subscription_delete_acknowledge(E2AP_PDU_t *delete_resp_pdu, long reqRequestorId, long reqInstanceId, long ranFuncionId);
 
   void generate_e2apv1_subscription_response(E2AP_PDU_t *sub_resp_pdu, E2AP_PDU_t *sub_req_pdu);
   
@@ -61,6 +64,8 @@ namespace encoding {
   void generate_e2apv1_service_update(E2AP_PDU_t *e2ap_pdu, std::vector<ran_func_info> all_funcs);
 
   long get_function_id_from_control_request(E2AP_PDU_t *pdu);
+
+  OCTET_STRING_t most_copy_src_ostring_to_dst_ostring ();
 }
 
 #endif

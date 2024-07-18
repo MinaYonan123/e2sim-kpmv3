@@ -84,6 +84,8 @@ int main(int argc, char* argv[]) {
   printf("value of this index is %d\n", ranfuncdesc[100]);
   printf("value of this index is %d\n", ranfuncdesc[101]);
   
+  //omar
+  printf
   e2sim.register_e2sm(1,ranfunc_ostr);
   e2sim.register_subscription_callback(1,&callback_kpm_subscription_request);
 

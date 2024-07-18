@@ -23,6 +23,8 @@ extern "C" {
 typedef enum ENGNB_ID_PR {
 	ENGNB_ID_PR_NOTHING,	/* No components present */
 	ENGNB_ID_PR_gNB_ID
+
+
 	/* Extensions may appear below */
 	
 } ENGNB_ID_PR;

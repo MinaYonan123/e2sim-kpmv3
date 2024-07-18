@@ -24,6 +24,8 @@
 #include <functional>
 #include <string>
 
+#include<thread>
+
 extern "C" {
 #include "E2AP-PDU.h"
 #include "OCTET_STRING.h"
@@ -31,6 +33,7 @@ extern "C" {
 
 typedef std::function<void(E2AP_PDU_t*)> SubscriptionCallback;
 typedef std::function<void(E2AP_PDU_t*)> SmCallback;
+typedef std::function<void(void)> CallbackFunction;
 
 class E2Sim {
 public:
@@ -39,7 +42,7 @@ public:
   void generate_e2apv1_subscription_response_success(E2AP_PDU *e2ap_pdu, long reqActionIdsAccepted[], long reqActionIdsRejected[], int accept_size, int reject_size, long reqRequestorId, long reqInstanceId);
 
   void generate_e2apv1_indication_request_parameterized(E2AP_PDU *e2ap_pdu, long requestorId, long instanceId, long ranFunctionId, long actionId, long seqNum, uint8_t *ind_header_buf, int header_length, uint8_t *ind_message_buf, int message_length);  
-
+   
   SubscriptionCallback get_subscription_callback(long func_id);
   SmCallback get_sm_callback(long func_id);
 
@@ -47,6 +50,9 @@ public:
 
   void register_subscription_callback(long func_id, SubscriptionCallback cb);
   void register_sm_callback(long func_id, SmCallback cb);
+
+  void register_callback(long cb_id, CallbackFunction cb);
+  CallbackFunction get_callback(long cb_id);
 
   void encode_and_send_sctp_data(E2AP_PDU_t* pdu);
 
@@ -60,6 +66,7 @@ private:
     std::unordered_map<long, SubscriptionCallback> subscription_callbacks;
     std::unordered_map<long, SmCallback> sm_callbacks;
 
+    std::unordered_map<long, CallbackFunction> callbackfunctions;
     int client_fd {0};
     void wait_for_sctp_data();
 

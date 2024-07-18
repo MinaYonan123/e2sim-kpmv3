@@ -30,7 +30,7 @@
 #include <ProtocolIE-Field.h>
 
 
-void e2ap_handle_sctp_data(int &socket_fd, sctp_buffer_t &data, E2Sim *e2sim) {
+bool e2ap_handle_sctp_data(int &socket_fd, sctp_buffer_t &data, E2Sim *e2sim) {
     LOG_D("in e2ap_handle_sctp_data()");
     //decode the data into E2AP-PDU
     auto *pdu = (E2AP_PDU_t *) calloc(1, sizeof(E2AP_PDU));
@@ -100,7 +100,8 @@ void e2ap_handle_sctp_data(int &socket_fd, sctp_buffer_t &data, E2Sim *e2sim) {
         case ProcedureCode_id_RICcontrol: // Procedure code = 4
             switch (pr_type_of_message) {
                 case E2AP_PDU_PR_initiatingMessage: {
-                    LOG_I("[E2AP] Received RIC-CONTROL-REQUEST");
+                    LOG_I("*******[E2AP] Received RIC-CONTROL-REQUEST******");
+
                     e2ap_handle_RICControlRequest(pdu, socket_fd, e2sim);
                     break;
                 }
@@ -169,6 +170,7 @@ void e2ap_handle_sctp_data(int &socket_fd, sctp_buffer_t &data, E2Sim *e2sim) {
                     LOG_I("[E2AP] Received RIC-SUBSCRIPTION-REQUEST");
                     //          e2ap_handle_RICSubscriptionRequest(pdu, socket_fd);
                     long func_id = encoding::get_function_id_from_subscription(pdu);
+
                     LOG_D("Function Id of message is %ld\n", func_id);
                     SubscriptionCallback cb;
 
@@ -203,9 +205,34 @@ void e2ap_handle_sctp_data(int &socket_fd, sctp_buffer_t &data, E2Sim *e2sim) {
             break;
         case ProcedureCode_id_RICsubscriptionDelete: // Procedure code: 9
             switch (pr_type_of_message) {
-                case E2AP_PDU_PR_initiatingMessage:
+                case E2AP_PDU_PR_initiatingMessage:{
                     LOG_I("[E2AP] Received RIC-SUBSCRIPTION-DELETE");
-                    break;
+                    // TODO: Mostafa
+
+                    CallbackFunction cb;
+
+                    LOG_I("****** e2ap_handle_RICSubscriptionDeleteRequest ******");
+
+                    bool func_exists = true;
+                    try {
+                        cb = e2sim->get_callback(1);
+
+                    } catch (const std::out_of_range &e) {
+                        func_exists = false;
+                    }
+
+                    if (func_exists) {
+                        LOG_D("Calling Delete callback function");
+                        cb();
+                    } else {
+                        LOG_E("Error: No RAN Function with this ID exists");
+                    }
+
+                    e2ap_handle_RICSubscriptionDeleteRequest(pdu, socket_fd, e2sim);
+
+                    return true;
+                    }
+
 
                 case E2AP_PDU_PR_successfulOutcome: LOG_I("[E2AP] Received SUBSCRIPTION-DELETE SUCCESS");
                     break;
@@ -222,50 +249,208 @@ void e2ap_handle_sctp_data(int &socket_fd, sctp_buffer_t &data, E2Sim *e2sim) {
 
             break;
     }
+    return false;
+}
+
+// TODO: Mostafa
+void e2ap_handle_RICSubscriptionDeleteRequest(E2AP_PDU_t* pdu, int &socket_fd, E2Sim *e2sim) {
+
+    RICsubscriptionDeleteRequest_t orig_req = pdu->choice.initiatingMessage->value.choice.RICsubscriptionDeleteRequest;
+// RICsubscriptionDeleteResponse_IEs
+
+  int count = orig_req.protocolIEs.list.count;
+  int size = orig_req.protocolIEs.list.size;
+
+  RICsubscriptionDeleteRequest_IEs_t **ies = (RICsubscriptionDeleteRequest_IEs_t**)orig_req.protocolIEs.list.array;
+
+  RICsubscriptionDeleteRequest_IEs__value_PR pres;
+  
+  uint16_t reqRequestorId {};
+  uint16_t reqInstanceId {};
+  uint16_t ranFuncionId {};
+
+
+  for (int i = 0; i < count; i++) 
+  {
+    RICsubscriptionDeleteRequest_IEs_t *next_ie = ies[i];
+    pres = next_ie->value.present; // value of the current IE
+      
+    switch(pres) 
+    {
+      // IE containing the RIC Request ID
+      case RICsubscriptionDeleteRequest_IEs__value_PR_RICrequestID:
+        {	
+          RICrequestID_t reqId = next_ie->value.choice.RICrequestID;
+          reqRequestorId = reqId.ricRequestorID;
+          reqInstanceId = reqId.ricInstanceID;
+          break;
+        }
+      // IE containing the RAN Function ID
+      case RICsubscriptionDeleteRequest_IEs__value_PR_RANfunctionID:
+        {
+          ranFuncionId = next_ie->value.choice.RANfunctionID;
+          break;
+        }
+        default:
+        {
+        //   NS_LOG_DEBUG ("in case default");	
+          continue;
+        }
+    }
+  }
+
+    auto* res_pdu = (E2AP_PDU_t*)calloc(1, sizeof(E2AP_PDU));
+    encoding::generate_e2apv1_subscription_delete_acknowledge(res_pdu, reqRequestorId, reqInstanceId, ranFuncionId);
+
+    LOG_D("[E2AP] Created RIC-SUBSCRIPTION-DELETE-ACKNOWLEDGE***");
+
+    e2ap_asn1c_print_pdu(res_pdu);
+
+    {
+        uint8_t       *buf;
+        sctp_buffer_t data;
+
+        data.len = e2ap_asn1c_encode_pdu(res_pdu, &buf);
+        memcpy(data.buffer, buf, (data.len < MAX_SCTP_BUFFER)? data.len : MAX_SCTP_BUFFER);
+
+        printf("\n ****** e2ap_handle_RICSubscriptionDeleteRequest ************ \n");
+
+        //send response data over sctp
+        if (sctp_send_data(socket_fd, data) > 0) {
+            LOG_I("[SCTP] Sent RIC-SUBSCRIPTION-DELETE-ACKNOWLEDGE");
+        } else {
+            LOG_E("[SCTP] Unable to send RIC-SUBSCRIPTION-DELETE-ACKNOWLEDGE to peer");
+        }
+    }
 }
 
 void e2ap_handle_RICControlRequest(E2AP_PDU_t *pdu, int &socket_fd, E2Sim *e2sim) {
-    long func_id = 300;
-    SmCallback cb;
+    // long func_id = 3;
 
-    bool func_exists = true;
-    try {
-        cb = e2sim->get_sm_callback(func_id);
-    } catch (const std::out_of_range &e) {
-        func_exists = false;
-    }
+    RICcontrolRequest_t orig_req = pdu->choice.initiatingMessage->value.choice.RICcontrolRequest;
 
-    if (func_exists) {
-        LOG_D("Calling callback function");
-        cb(pdu);
-    } else {
-        LOG_E("Error: No RAN Function with this ID exists");
+  int count = orig_req.protocolIEs.list.count;
+  int size = orig_req.protocolIEs.list.size;
+
+  RICcontrolRequest_IEs_t **ies = (RICcontrolRequest_IEs_t**)orig_req.protocolIEs.list.array;
+
+  RICcontrolRequest_IEs__value_PR pres;
+  
+  uint16_t reqRequestorId {};
+  uint16_t reqInstanceId {};
+  uint16_t ranFuncionId {};
+
+  
+  // iterate over the IEs
+  for (int i = 0; i < count; i++) 
+  {
+    RICcontrolRequest_IEs_t *next_ie = ies[i];
+    pres = next_ie->value.present; // value of the current IE
+      
+    switch(pres) 
+    {
+      // IE containing the RIC Request ID
+      case RICcontrolRequest_IEs__value_PR_RICrequestID:
+        {
+        //   NS_LOG_DEBUG ("Processing RIC Request ID field");	
+          RICrequestID_t reqId = next_ie->value.choice.RICrequestID;
+          reqRequestorId = reqId.ricRequestorID;
+          reqInstanceId = reqId.ricInstanceID;
+        //   NS_LOG_DEBUG ( "RIC Requestor ID " << reqRequestorId);
+        //   NS_LOG_DEBUG ( "RIC Instance ID " << reqInstanceId);
+          break;
+        }
+      // IE containing the RAN Function ID
+      case RICcontrolRequest_IEs__value_PR_RANfunctionID:
+        {
+        //   NS_LOG_DEBUG ("Processing RAN Function ID field");	
+              ranFuncionId = next_ie->value.choice.RANfunctionID;
+
+              SmCallback cb;
+
+            LOG_I("****** e2ap_handle_RICControlRequest ******");
+
+            bool func_exists = true;
+            try {
+                // cb = e2sim->get_sm_callback(func_id);
+                cb = e2sim->get_sm_callback(ranFuncionId);
+
+            } catch (const std::out_of_range &e) {
+                func_exists = false;
+            }
+
+            if (func_exists) {
+                LOG_D("Calling callback function");
+                cb(pdu);
+                LOG_D("*** DONE Calling callback function ****");
+            } else {
+                LOG_E("Error: No RAN Function with this ID exists");
+            }
+
+        //   NS_LOG_DEBUG ("RAN Function ID " << ranFuncionId);
+          break;
+        }
+        default:
+        {
+        //   NS_LOG_DEBUG ("in case default");	
+          continue;
+        }
     }
+  }
+
 
     auto* res_pdu = (E2AP_PDU_t*)calloc(1, sizeof(E2AP_PDU));
-    encoding::generate_e2apv1_ric_control_acknowledge(res_pdu);
+    encoding::generate_e2apv1_ric_control_acknowledge(res_pdu, reqRequestorId, reqInstanceId, ranFuncionId);
 
     LOG_D("[E2AP] Created E2-RIC-CONTROL-ACKNOWLEDGE");
 
     e2ap_asn1c_print_pdu(res_pdu);
 
-    auto buffer_size = MAX_SCTP_BUFFER;
-    unsigned char buffer[MAX_SCTP_BUFFER];
+    if(false) {
+        // Disable due Bug - not right encode
+        auto buffer_size = MAX_SCTP_BUFFER;
+        unsigned char buffer[MAX_SCTP_BUFFER];
 
-    sctp_buffer_t data;
-    auto er = asn_encode_to_buffer(nullptr, ATS_BASIC_XER, &asn_DEF_E2AP_PDU, res_pdu, buffer, buffer_size);
+        sctp_buffer_t data;
+        auto er = asn_encode_to_buffer(nullptr, ATS_BASIC_XER, &asn_DEF_E2AP_PDU, res_pdu, buffer, buffer_size);
 
-    LOG_D("er encoded is %zd\n", er.encoded);
-    data.len = (int) er.encoded;
+        LOG_D("er encoded is %zd\n", er.encoded);
+        data.len = (int) er.encoded;
 
-    memcpy(data.buffer, buffer, er.encoded);
+        memcpy(data.buffer, buffer, er.encoded);
 
-    //send response data over sctp
-    if (sctp_send_data(socket_fd, data) > 0) {
-        LOG_I("[SCTP] Sent E2-SERVICE-UPDATE");
+        // m_e2sim->encode_and_send_sctp_data(e2ap_pdu);
+        //send response data over sctp
+        if (sctp_send_data(socket_fd, data) > 0) {
+            LOG_I("[SCTP] Sent E2-SERVICE-UPDATE");
+        } else {
+            LOG_E("[SCTP] Unable to send E2-SERVICE-UPDATE to peer");
+        }
     } else {
-        LOG_E("[SCTP] Unable to send E2-SERVICE-UPDATE to peer");
+        uint8_t       *buf;
+        sctp_buffer_t data;
+
+        data.len = e2ap_asn1c_encode_pdu(res_pdu, &buf);
+        memcpy(data.buffer, buf, (data.len < MAX_SCTP_BUFFER)? data.len : MAX_SCTP_BUFFER);
+
+        printf("\n ****** e2ap_handle_RICControlRequest End Print buffer ************ \n");
+
+        // m_e2sim->encode_and_send_sctp_data(e2ap_pdu);
+        //send response data over sctp
+        if (sctp_send_data(socket_fd, data) > 0) {
+            LOG_I("[SCTP] Sent E2-SERVICE-UPDATE");
+        } else {
+            LOG_E("[SCTP] Unable to send E2-SERVICE-UPDATE to peer");
+        }
     }
+
+    // // m_e2sim->encode_and_send_sctp_data(e2ap_pdu);
+    // //send response data over sctp
+    // if (sctp_send_data(socket_fd, data) > 0) {
+    //     LOG_I("[SCTP] Sent E2-SERVICE-UPDATE");
+    // } else {
+    //     LOG_E("[SCTP] Unable to send E2-SERVICE-UPDATE to peer");
+    // }
 
 }
 

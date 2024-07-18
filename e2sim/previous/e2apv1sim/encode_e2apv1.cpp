@@ -591,10 +591,11 @@ void generate_e2apv1_indication_request_parameterized(E2AP_PDU *e2ap_pdu,
 						      int message_length) {
 
   fprintf(stderr, "ind1\n");
+  
   RICindication_IEs_t *ricind_ies = (RICindication_IEs_t*)calloc(1, sizeof(RICindication_IEs_t));
   RICindication_IEs_t *ricind_ies2 = (RICindication_IEs_t*)calloc(1, sizeof(RICindication_IEs_t));
   RICindication_IEs_t *ricind_ies3 = (RICindication_IEs_t*)calloc(1, sizeof(RICindication_IEs_t));
-  RICindication_IEs_t *ricind_ies4 = (RICindication_IEs_t*)calloc(1, sizeof(RICindication_IEs_t));
+  //RICindication_IEs_t *ricind_ies4 = (RICindication_IEs_t*)calloc(1, sizeof(RICindication_IEs_t));
   RICindication_IEs_t *ricind_ies5 = (RICindication_IEs_t*)calloc(1, sizeof(RICindication_IEs_t));
   RICindication_IEs_t *ricind_ies6 = (RICindication_IEs_t*)calloc(1, sizeof(RICindication_IEs_t));
   RICindication_IEs_t *ricind_ies7 = (RICindication_IEs_t*)calloc(1, sizeof(RICindication_IEs_t));
@@ -625,11 +626,11 @@ void generate_e2apv1_indication_request_parameterized(E2AP_PDU *e2ap_pdu,
   ricind_ies3->value.choice.RICactionID = actionId;
 
 
-  pres3 = RICindication_IEs__value_PR_RICindicationSN;
-  ricind_ies4->id = ProtocolIE_ID_id_RICindicationSN;
-  ricind_ies4->criticality = 0;
-  ricind_ies4->value.present = pres3;
-  ricind_ies4->value.choice.RICindicationSN = seqNum;
+  //pres3 = RICindication_IEs__value_PR_RICindicationSN;
+  //ricind_ies4->id = ProtocolIE_ID_id_RICindicationSN;
+  //ricind_ies4->criticality = 0;
+  //ricind_ies4->value.present = pres3;
+  //ricind_ies4->value.choice.RICindicationSN = seqNum;
 
   //Indication type is REPORT
   pres3 = RICindication_IEs__value_PR_RICindicationType;
@@ -713,7 +714,7 @@ void generate_e2apv1_indication_request_parameterized(E2AP_PDU *e2ap_pdu,
 
   printf("5.35\n");
   
-  ret = ASN_SEQUENCE_ADD(&ricindication->protocolIEs.list, ricind_ies4);
+  //ret = ASN_SEQUENCE_ADD(&ricindication->protocolIEs.list, ricind_ies4);
 
   printf("5.36\n");
   

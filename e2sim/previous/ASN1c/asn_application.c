@@ -210,7 +210,7 @@ asn_encode_to_new_buffer(const asn_codec_ctx_t *opt_codec_ctx,
                          const asn_TYPE_descriptor_t *td, const void *sptr) {
     struct dynamic_encoder_key buf_key;
     asn_encode_to_new_buffer_result_t res;
-
+    printf("Encoding start\n");
     buf_key.buffer_size = 16;
     buf_key.buffer = MALLOC(buf_key.buffer_size);
     buf_key.computed_size = 0;
@@ -243,6 +243,8 @@ asn_encode_internal(const asn_codec_ctx_t *opt_codec_ctx,
                     enum asn_transfer_syntax syntax,
                     const asn_TYPE_descriptor_t *td, const void *sptr,
                     asn_app_consume_bytes_f *callback, void *callback_key) {
+
+    printf("Internal encoding\n");
     asn_enc_rval_t er = {0,0,0};
     enum xer_encoder_flags_e xer_flags = XER_F_CANONICAL;
 
@@ -378,7 +380,9 @@ asn_encode_internal(const asn_codec_ctx_t *opt_codec_ctx,
         if(td->op->aper_encoder) {
             er = aper_encode(td, 0, sptr, callback, callback_key);
             if(er.encoded == -1) {
+                printf("The er.encoded == -1");
                 if(er.failed_type && er.failed_type->op->aper_encoder) {
+                    printf("The er.encoded == -1");
                     errno = EBADF;  /* Structure has incorrect form. */
                 } else {
                     errno = ENOENT; /* APER is not defined for this type. */
