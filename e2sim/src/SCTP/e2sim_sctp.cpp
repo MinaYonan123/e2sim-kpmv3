@@ -21,6 +21,7 @@
 #include <unistd.h>		//for close()
 #include <stdlib.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <netinet/in.h>
 #include <netinet/sctp.h>
 #include <arpa/inet.h>	//for inet_ntop()
@@ -185,6 +186,13 @@ int sctp_start_client(const char *server_ip_str, const int server_port, const in
   LOG_I("[SCTP] Connection established");
 
   return client_fd;
+}
+
+int sctp_close_clinet_connection(int client_fd) {
+  if(close(client_fd) < 0) {
+    return 0;
+  }
+  return 1;
 }
 
 int sctp_accept_connection(const char *server_ip_str, const int server_fd)

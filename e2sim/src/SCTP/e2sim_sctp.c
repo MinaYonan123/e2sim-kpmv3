@@ -102,6 +102,13 @@ int sctp_start_client(const char *server_ip_str, const int server_port)
 
 }
 
+int sctp_close_clinet_connection(int client_fd) {
+  if(close(client_fd) < 0) {
+    return 0;
+  }
+  return 1;
+}
+
 //ssize_t sctp_send_to_socket(int sockfd, const void* buf, size_t len)
 int sctp_send_to_socket(int sockfd, const void* buf, size_t len)
 {

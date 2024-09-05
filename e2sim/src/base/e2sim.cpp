@@ -211,6 +211,9 @@ int E2Sim::run_loop(std::string server_ip, uint16_t server_port, uint16_t local_
 
               LOG_D("[SCTP] Application will be terminated");
 
+              if(sctp_close_clinet_connection(client_fd)) {
+                LOG_D("[SCTP] Connection Terminated");
+              }
               // TODO: Mostafa, need to terminate detached thread, 
               // and indication message thread.
               break;

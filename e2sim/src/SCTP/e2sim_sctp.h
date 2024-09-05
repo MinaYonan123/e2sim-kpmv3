@@ -31,6 +31,8 @@ int sctp_start_client(const char *server_ip_str, const int server_port);
 
 int sctp_send_to_socket(int sockfd, const void *buf, size_t len);
 
+int sctp_close_clinet_connection(int client_fd);
+
 //int sctp_recv_from_socket(int sockfd, void *buf, size_t buf_size);
 
 //test only

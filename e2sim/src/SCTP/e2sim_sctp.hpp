@@ -34,6 +34,8 @@ int sctp_send_data(int &socket_fd, sctp_buffer_t &data);
 
 int sctp_send_data_X2AP(int &socket_fd, sctp_buffer_t &data);
 
+int sctp_close_clinet_connection(int client_fd);
+
 int sctp_receive_data(int &socket_fd, sctp_buffer_t &data);
 
 #endif
