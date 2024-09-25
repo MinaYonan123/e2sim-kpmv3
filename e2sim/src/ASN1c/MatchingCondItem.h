@@ -23,7 +23,7 @@ extern "C" {
 /* MatchingCondItem */
 typedef struct MatchingCondItem {
 	MatchingCondItem_Choice_t	 matchingCondChoice;
-	LogicalOR_t	*logicalOR;	/* OPTIONAL */
+	LogicalOR_t	*logicalOR	/* OPTIONAL */;
 	/*
 	 * This type is extensible,
 	 * possible extensions are below.
