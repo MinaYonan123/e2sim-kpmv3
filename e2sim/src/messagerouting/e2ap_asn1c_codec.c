@@ -144,7 +144,7 @@ int e2ap_asn1c_encode_pdu(E2AP_PDU_t* pdu, unsigned char **buffer)
         LOG_E("[E2AP ASN] Unable to aper encode");
         exit(EXIT_FAILURE);
     } else {
-        LOG_D("[E2AP ASN] Encoded succesfully, encoded size = %d", len);
+        LOG_D("**[E2AP ASN] Encoded succesfully, encoded size = %d", len);
     }
 
   ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_E2AP_PDU, pdu);

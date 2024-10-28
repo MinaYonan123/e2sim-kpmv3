@@ -520,7 +520,7 @@ void encoding::generate_e2apv1_subscription_response_success(E2AP_PDU *e2ap_pdu,
     auto *ricactionadmitted =
             (RICsubscriptionResponse_IEs_t *) calloc(1, sizeof(RICsubscriptionResponse_IEs_t));
     ricactionadmitted->id = ProtocolIE_ID_id_RICactions_Admitted;
-    ricactionadmitted->criticality = Criticality_reject;
+    ricactionadmitted->criticality == Criticality_ignore ;
     ricactionadmitted->value.present = RICsubscriptionResponse_IEs__value_PR_RICaction_Admitted_List;
 
     auto *admlist =
@@ -537,7 +537,7 @@ void encoding::generate_e2apv1_subscription_response_success(E2AP_PDU *e2ap_pdu,
 
         auto *admitie = (RICaction_Admitted_ItemIEs_t *) calloc(1, sizeof(RICaction_Admitted_ItemIEs_t));
         admitie->id = ProtocolIE_ID_id_RICaction_Admitted_Item;
-        admitie->criticality = Criticality_reject;
+        admitie->criticality = Criticality_ignore;
         admitie->value.present = RICaction_Admitted_ItemIEs__value_PR_RICaction_Admitted_Item;
         admitie->value.choice.RICaction_Admitted_Item.ricActionID = aid;
 
@@ -874,7 +874,7 @@ void encoding::generate_e2apv1_indication_request_parameterized(E2AP_PDU *e2ap_p
 
     auto *initmsg = (InitiatingMessage_t *) calloc(1, sizeof(InitiatingMessage_t));
     initmsg->procedureCode = ProcedureCode_id_RICindication;
-    initmsg->criticality = Criticality_reject;
+    initmsg->criticality = Criticality_ignore;
     initmsg->value.present = InitiatingMessage__value_PR_RICindication;
     initmsg->value.choice.RICindication = *ricindication;
 

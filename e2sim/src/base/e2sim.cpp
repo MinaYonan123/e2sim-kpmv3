@@ -170,7 +170,7 @@ int E2Sim::run_loop(std::string server_ip, uint16_t server_port, uint16_t local_
     if (LOG_LEVEL == LOG_LEVEL_DEBUG)
         xer_fprint(stderr, &asn_DEF_E2AP_PDU, pdu_setup);
 
-    LOG_D("After XER Encoding");
+    LOG_D("*After XER Encoding");
 
     sctp_buffer_t data_buf;
     memset(data_buf.buffer, 0, MAX_SCTP_BUFFER);
