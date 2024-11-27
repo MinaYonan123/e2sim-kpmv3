@@ -9,7 +9,9 @@ This repository is a fork of the OSC [e2sim](https://github.com/o-ran-sc/sim-e2-
 
 This module has been updated by Orange Innovation Egypt team, and this change includes: 
 
-- Update the KPM v1 to KPM v3 
+- Update the KPM v1 to KPM v3
+- Update to E2AP v1.01
+- Updated to RC v1.03
 
 This module enables the support for running multiple terminations of an O-RAN-compliant E2 interface inside the simulation process. It has been developed as part of a collaborative effort between the [Institute for the Wireless Internet of Things (WIoT)](https://wiot.northeastern.edu) at Northeastern University, Mavenir, the University of Padova and Sapienza, University of Rome.
 
